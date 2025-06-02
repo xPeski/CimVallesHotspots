@@ -35,8 +35,8 @@ console.log(result.rows[0]);
     );
 
     req.session.token = token;
-    const redirectTo = req.query.redirect || '/';
-    res.redirect(redirectTo);
+const redirectTo = req.query.redirect || '/map';
+
   } catch (err) {
     console.error('Error en login:', err);
     res.status(500).send('Error interno');
