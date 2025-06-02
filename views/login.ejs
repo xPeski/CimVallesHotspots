@@ -1,30 +1,19 @@
+<!-- views/login.ejs -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar sesión</title>
-  <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="login-page">
-  <div class="container">
-    <h1>Iniciar sesión</h1>
-    <% if (error) { %>
-      <div class="error-message"><%= error %></div>
-    <% } %>
-    <form action="/auth/login" method="POST">
-      <div class="form-group">
-        <label for="email">Usuario (email)</label>
-        <input type="text" id="email" name="email" placeholder="Introduce tu email" required>
-      </div>
-
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="contraseña" placeholder="Introduce tu contraseña" required>
-      </div>
-
-      <button type="submit">Entrar</button>
-    </form>
-  </div>
+<body>
+  <h1>Login</h1>
+  <% if (error) { %>
+    <p style="color: red;"><%= error %></p>
+  <% } %>
+  <form method="POST" action="/login">
+    <label>Email: <input type="email" name="email" required></label><br>
+    <label>Contraseña: <input type="password" name="password" required></label><br>
+    <button type="submit">Entrar</button>
+  </form>
 </body>
 </html>
