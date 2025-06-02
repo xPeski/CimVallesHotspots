@@ -23,6 +23,15 @@ app.use(express.static('public'));
 app.use(authRoutes);
 app.use('/map', mapRoutes);
 
+// Ruta raíz
+app.get('/', (req, res) => {
+  try {
+    res.render('login', { error: null });
+  } catch (err) {
+    console.error('Error al renderizar login:', err);
+    res.status(500).send('Error interno al cargar el login');
+  }
+});
 // 3) Inicio
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`→ http://localhost:${PORT}`));
