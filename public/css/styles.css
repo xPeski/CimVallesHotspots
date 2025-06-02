@@ -1,0 +1,40 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+#map-container {
+  position: relative;
+  width: 800px;
+  margin: 2rem auto;
+}
+#map-image {
+  width: 100%;
+  display: block;
+}
+.hotspot {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: yellow;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+#tooltip {
+  position: absolute;
+  display: none;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  white-space: pre-line;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 10;
+}

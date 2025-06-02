@@ -1,0 +1,55 @@
+<!-- views/revisar.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Revisión de <%= punto.nombre %></title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    .mensaje {
+      margin: 1rem auto;
+      padding: 1rem;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      border-radius: 8px;
+      width: fit-content;
+    }
+    .boton {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .boton:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Revisión del punto: <%= punto.nombre %></h1>
+  <p><%= punto.descripcion %></p>
+
+  <% if (revisado) { %>
+    <div class="mensaje">
+      ✅ Revisión registrada correctamente.
+    </div>
+  <% } %>
+
+  <form method="POST" action="/api/revisar/<%= punto.id %>">
+    <button class="boton" type="submit">Registrar revisión</button>
+  </form>
+
+  <p>
+    <a class="boton" href="/">Volver al mapa</a>
+  </p>
+</body>
+</html>
