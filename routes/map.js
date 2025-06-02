@@ -1,6 +1,6 @@
 // routes/map.js
 import express from 'express';
-import { auth } from './auth.js';
+import { auth } from './middleware/auth.js';
 
 const router = express.Router();
 
