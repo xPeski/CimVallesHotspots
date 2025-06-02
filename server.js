@@ -1,8 +1,9 @@
 // server.js
 import express from 'express';
 import session from 'express-session';
-import authRoutes from './middleware/auth.js';
+import authRoutes from './routes/auth.js';
 import mapRoutes  from './routes/map.js';
+import { auth } from './middleware/auth.js';
 
 const app = express();
 
@@ -10,10 +11,12 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'TU_SESSION_SECRET',
+  secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: true,
+  cookie: { secure: true } // poner true en producción con HTTPS
 }));
+
 app.use(express.static('public'));
 
 // 2) Rutas

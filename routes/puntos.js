@@ -1,6 +1,6 @@
 // routes/puntos.js
 import express from 'express';
-import { auth } from '../middleware/auth.js';
+import { auth } from './auth.js';
 import { obtenerUltimasPorFecha, registrarRevision } from '../models/revisiones.js';
 import { obtenerPorId } from '../models/puntos.js';
 
