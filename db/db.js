@@ -6,12 +6,20 @@ dotenv.config(); // Cargar variables del archivo .env
 
 const { Pool } = pkg;
 
-// Crear un pool de conexiones con la URL de la base de datos
+// Validar URL
+if (!process.env.DATABASE_PUBLIC_URL) {
+  console.error('❌ DATABASE_PUBLIC_URL no está definida');
+  process.exit(1);
+}
+
+// Crear pool de conexiones
 const pool = new Pool({
   connectionString: process.env.DATABASE_PUBLIC_URL,
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false } // Railway requiere SSL
 });
-console.log(process.env.DATABASE_PUBLIC_URL);
+
+console.log('🔌 Conectando a PostgreSQL en:', process.env.DATABASE_PUBLIC_URL);
+
 // Verificar conexión
 pool.connect()
   .then(() => console.log('✅ Conectado a PostgreSQL usando pg'))
