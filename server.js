@@ -39,3 +39,5 @@ try {
   });
 } catch (err) {
   console.error('Error al iniciar la app:', err);
+}
+
