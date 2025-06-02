@@ -1,7 +1,7 @@
 // server.js
 import express from 'express';
 import session from 'express-session';
-import authRoutes from './routes/auth.js';
+import authRoutes from './middleware/auth.js';
 import mapRoutes  from './routes/map.js';
 
 const app = express();
