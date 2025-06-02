@@ -20,7 +20,8 @@ app.use(session({
 app.use(express.static('public'));
 
 // 2) Rutas
-app.use(authRoutes);
+import authRoutes from './routes/auth.js';
+app.use('/auth', authRoutes);
 app.use('/map', mapRoutes);
 
 // Ruta raíz
