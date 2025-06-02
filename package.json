@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "npm run build"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
