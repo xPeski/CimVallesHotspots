@@ -13,9 +13,9 @@ router.get('/login', (req, res) => {
 
 // POST /login - procesa el login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { nombre, password } = req.body;
   try {
-    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+    const result = await pool.query('SELECT * FROM usuarios WHERE nombre = $1', [nombre]);
 
     if (result.rowCount === 0) {
       return res.render('login', { error: 'Usuario no encontrado' });
