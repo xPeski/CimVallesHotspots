@@ -14,7 +14,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true } // poner true en producción con HTTPS
+  cookie: { secure: false } // poner true en producción con HTTPS
 }));
 
 app.use(express.static('public'));
@@ -32,6 +32,10 @@ app.get('/', (req, res) => {
     res.status(500).send('Error interno al cargar el login');
   }
 });
-// 3) Inicio
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`→ http://localhost:${PORT}`));
+// Iniciar servidor
+try {
+  app.listen(process.env.PORT || 3000, () => {
+    console.log(`Servidor en http://localhost:${process.env.PORT || 3000}`);
+  });
+} catch (err) {
+  console.error('Error al iniciar la app:', err);
