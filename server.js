@@ -4,6 +4,8 @@ import session from 'express-session';
 import authRoutes from './routes/auth.js';
 import mapRoutes  from './routes/map.js';
 import { auth } from './middleware/auth.js';
+import revisarRoutes from './routes/revisar.js';
+
 
 const app = express();
 
@@ -23,7 +25,7 @@ app.use(express.static('public'));
 
 app.use('/auth', authRoutes);
 app.use('/map', mapRoutes);
-
+app.use('/revisar', revisarRoutes);
 
 
 // Ruta raíz

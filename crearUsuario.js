@@ -10,10 +10,10 @@ async function crearUsuarioConContraseñaHasheada() {
 
   try {
     const result = await pool.query(
-      `INSERT INTO usuarios (nombre, password_hash) 
-       VALUES ($1, $2) 
+      `INSERT INTO usuarios (nombre, password_hash, mapa_id) 
+       VALUES ($1, $2, $3) 
        RETURNING *`,
-      [nombre, hashedPassword]
+      [nombre, hashedPassword, mapaId]
     );
 
     console.log('✅ Usuario creado:', result.rows[0]);
