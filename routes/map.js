@@ -59,8 +59,15 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       let color = 'yellow';
       let tooltip = 'Sin revisión';
 
-      const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
-      const fechaRevisionLocal = fechaHoraRevision ? new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000) : null;
+      const fechaHoraRevision = (p.fecha && p.hora && /^\d{2}:\d{2}:\d{2}$/.test(p.hora))
+        ? new Date(`${p.fecha}T${p.hora}`)
+        : null;
+
+      let fechaRevisionLocal = null;
+      if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
+        fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000); // UTC+2
+      }
+
 
 
       if (fechaHoraRevision) {
@@ -73,6 +80,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
         //   color = 'yellow';
         //   tooltip = 'Sin revisión';
         // }
+        
       } else {
         const minutosRestantes = Math.floor((horaLimite - local) / 60000);
         if (minutosRestantes <= 30 && minutosRestantes > 0) {
