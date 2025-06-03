@@ -1,10 +1,17 @@
 export async function registrarRevision(puntoId, usuarioId) {
-  const res = await pool.query(
-    'INSERT INTO revisiones (punto_id, usuario_id) VALUES ($1, $2) RETURNING *',
-    [puntoId, usuarioId]
-  );
-  return res.rows[0];
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  const local = new Date(now.getTime() - offsetMs);
+
+  const fecha = local.toISOString().split('T')[0];         // YYYY-MM-DD
+  const hora = local.toTimeString().split(' ')[0];         // HH:MM:SS
+
+  await pool.query(`
+    INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
+    VALUES ($1, $2, $3, $4)
+  `, [usuarioId, puntoId, fecha, hora]);
 }
+
 
 export async function obtenerUltimasPorFecha(fecha) {
   const res = await pool.query(`
