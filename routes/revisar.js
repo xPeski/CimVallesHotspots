@@ -24,6 +24,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+
 // POST /api/revisar/:id - registrar revisión
 router.post('/api/revisar/:id', auth, async (req, res) => {
   const puntoId = req.params.id;
@@ -34,20 +35,24 @@ router.post('/api/revisar/:id', auth, async (req, res) => {
     const fecha = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const hora = now.toTimeString().split(' ')[0]; // HH:MM:SS
 
-    await pool.query(`
+    const insert = await pool.query(`
       INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
       VALUES ($1, $2, $3, $4)
-    `, [userId, puntoId, fecha, hora]);
+      RETURNING *`, [userId, puntoId, fecha, hora]);
+
+    console.log('✅ Revisión insertada:', insert.rows[0]);
 
     const puntoResult = await pool.query('SELECT * FROM puntos WHERE id = $1', [puntoId]);
     const punto = puntoResult.rows[0];
 
     res.render('revisar', { punto, revisado: true });
+
   } catch (err) {
-    console.error('❌ Error al registrar revisión:', err);
+    console.error('❌ Error al registrar revisión:', err.message);
     res.status(500).send('Error al guardar la revisión');
   }
 });
+
 
 
 export default router;
