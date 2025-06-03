@@ -20,7 +20,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const result = await pool.query('SELECT * FROM usuarios WHERE nombre = $1', [nombre]);
-
+console.log(req.body.redirect);
     if (result.rowCount === 0) {
      return res.render('login', { error: 'Usuario no encontrado', redirect: req.body.redirect || '/map' });
 
