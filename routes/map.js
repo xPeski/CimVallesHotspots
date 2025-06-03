@@ -27,9 +27,18 @@ router.get('/', auth, async (req, res) => {
 
 
 // API para estados de puntos
+
 router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
-    const hoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const ahora = new Date();
+
+    // Fecha y hora actual en formato local
+    const hoy = ahora.toISOString().split('T')[0]; // YYYY-MM-DD
+    const horaActual = ahora.toTimeString().split(' ')[0]; // HH:MM:SS
+
+    // Hora límite para revisión (20:30 local)
+    const horaLimite = new Date();
+    horaLimite.setHours(20, 30, 0, 0); // 20:30:00
 
     const result = await pool.query(`
       SELECT 
@@ -43,27 +52,31 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       LEFT JOIN usuarios u ON r.usuario_id = u.id
     `, [hoy]);
 
-    const ahora = new Date();
-    const umbral = new Date();
-    umbral.setHours(20, 0, 0); // 20:00
-
     const datos = result.rows.map(p => {
       let color = 'yellow';
       let tooltip = 'Sin revisión';
 
-      if (p.fecha) {
-        const fechaHora = new Date(`${p.fecha}T${p.hora}`);
-        tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
+      const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
 
-        if (ahora > umbral) {
-          color = 'green'; // revisado
+      if (fechaHoraRevision && p.fecha === hoy) {
+        // Revisión registrada hoy
+        if (ahora <= horaLimite) {
+          color = 'green';
+          tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
         } else {
-          color = 'green'; // aún antes del límite, pero revisado
+          // Pasada la hora límite, resetea a sin revisión
+          color = 'yellow';
+          tooltip = 'Sin revisión';
         }
       } else {
-        if ((umbral - ahora) < 30 * 60 * 1000) {
+        // Aún sin revisión hoy
+        const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
+        if (minutosRestantes <= 30 && minutosRestantes > 0) {
           color = 'red';
-          tooltip = '❗ No revisado. Menos de 30 min para cierre';
+          tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+        } else if (minutosRestantes <= 0) {
+          color = 'yellow';
+          tooltip = 'Sin revisión';
         }
       }
 
@@ -76,5 +89,6 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
+
 
 export default router;

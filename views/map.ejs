@@ -22,11 +22,10 @@
 <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
   <image xlink:href="<%= mapa.imagen_url %>" width="800" height="600" />
 <% puntos.forEach(p => { %>
-  <g id="punto-<%= p.id %>" class="tooltip-box">
-    <rect x="<%= p.x %>" y="<%= p.y %>" width="<%= p.ancho %>" height="<%= p.alto %>" fill="yellow" />
-    <title><%= p.tooltip %></title>
-    <text x="<%= p.x + 5 %>" y="<%= p.y - 5 %>" class="tooltip-text">Sin revisión</text>
-  </g>
+<g id="punto-<%= p.id %>" class="tooltip-box">
+  <rect x="<%= p.x %>" y="<%= p.y %>" width="<%= p.ancho %>" height="<%= p.alto %>" fill="yellow" />
+  <title><%= p.tooltip %></title>
+</g>
 <% }) %>
 
 </svg>
@@ -47,9 +46,7 @@
 
             rect.setAttribute('fill', p.color);
             title.textContent = p.tooltip;
-            if (text) {
-              text.textContent = p.tooltip;
-            }
+
         }
         });
       } catch (err) {
