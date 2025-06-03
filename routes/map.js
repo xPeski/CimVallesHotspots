@@ -6,28 +6,25 @@ const router = express.Router();
 
 router.get('/', auth, async (req, res) => {
   try {
-    // 1. Cargar datos del usuario ya autenticado
-    const usuario = req.user;
+    const userId = req.user.id;
 
-    // 2. Obtener el mapa asociado al usuario
+    // Obtener información del usuario y su mapa
+    const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
+    const usuario = usuarioResult.rows[0];
+
     const mapaResult = await pool.query('SELECT * FROM mapas WHERE id = $1', [usuario.mapa_id]);
     const mapa = mapaResult.rows[0];
 
-    // 3. Obtener los puntos del mapa correspondiente
-    const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [usuario.mapa_id]);
+    const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-    // 4. Renderizar vista con datos
-    res.render('map', {
-      usuario,
-      mapa,
-      puntos
-    });
+    res.render('map', { usuario, mapa, puntos }); // <- importante incluir `mapa`
   } catch (err) {
-    console.error('❌ Error cargando el mapa:', err);
-    res.status(500).send('Error al cargar el mapa');
+    console.error('❌ Error al cargar el mapa:', err);
+    res.status(500).send('Error interno');
   }
 });
+
 
 // API para estados de puntos
 router.get('/api/estados-puntos', auth, async (req, res) => {
