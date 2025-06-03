@@ -9,6 +9,6 @@ export function auth(req, res, next) {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
-    res.redirect('/login');
+    res.redirect('/auth/login');
   }
 }
