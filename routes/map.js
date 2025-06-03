@@ -18,37 +18,38 @@ router.get('/', auth, async (req, res) => {
     const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-    res.render('map', { usuario, mapa, puntos }); // <- importante incluir `mapa`
+    res.render('map', { usuario, mapa, puntos });
   } catch (err) {
     console.error('❌ Error al cargar el mapa:', err);
     res.status(500).send('Error interno');
   }
 });
 
-
 // API para estados de puntos
-
 router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
     const ahora = new Date();
+    const hoy = ahora.toISOString().split('T')[0];
+    const horaActual = ahora.toTimeString().split(' ')[0];
 
-    // Fecha y hora actual en formato local
-    const hoy = ahora.toISOString().split('T')[0]; // YYYY-MM-DD
-    const horaActual = ahora.toTimeString().split(' ')[0]; // HH:MM:SS
-
-    // Hora límite para revisión (20:30 local)
     const horaLimite = new Date();
-    horaLimite.setHours(20, 30, 0, 0); // 20:30:00
+    horaLimite.setHours(20, 30, 0, 0);
 
     const result = await pool.query(`
       SELECT 
-        puntos.id,
-        puntos.nombre,
+        p.id,
+        p.nombre,
         r.fecha,
         r.hora,
         u.nombre AS usuario
-      FROM puntos
-      LEFT JOIN revisiones r ON puntos.id = r.punto_id AND r.fecha = $1
+      FROM puntos p
+      LEFT JOIN LATERAL (
+        SELECT *
+        FROM revisiones
+        WHERE punto_id = p.id AND fecha = $1
+        ORDER BY hora DESC
+        LIMIT 1
+      ) r ON true
       LEFT JOIN usuarios u ON r.usuario_id = u.id
     `, [hoy]);
 
@@ -58,18 +59,15 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
 
       const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
 
-      if (fechaHoraRevision /*&& p.fecha === hoy*/) {
-        // Revisión registrada hoy
+      if (fechaHoraRevision && p.fecha === hoy) {
         if (ahora <= horaLimite) {
           color = 'green';
           tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
         } else {
-          // Pasada la hora límite, resetea a sin revisión
           color = 'yellow';
           tooltip = 'Sin revisión';
         }
       } else {
-        // Aún sin revisión hoy
         const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
         if (minutosRestantes <= 30 && minutosRestantes > 0) {
           color = 'red';
@@ -89,6 +87,5 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
-
 
 export default router;
