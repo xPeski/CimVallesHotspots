@@ -7,7 +7,7 @@ import { auth } from './middleware/auth.js';
 
 const app = express();
 
-// 1) Configuración
+// 1) Configuraciónl
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
