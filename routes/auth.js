@@ -33,9 +33,20 @@ console.log(result.rows[0]);
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
+console.log('✅ Usuario autenticado. Preparando sesión...');
+req.session.token = token;
 
-    req.session.token = token;
-const redirectTo = req.query.redirect || '/map';
+req.session.save(err => {
+  if (err) {
+    console.error('❌ Error al guardar sesión:', err);
+    return res.status(500).send('Error al guardar sesión');
+  }
+
+  console.log('✅ Sesión guardada. Redirigiendo a:', redirectTo);
+  res.redirect(redirectTo);
+});
+
+
 
   } catch (err) {
     console.error('Error en login:', err);
