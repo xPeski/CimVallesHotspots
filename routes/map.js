@@ -28,12 +28,14 @@ router.get('/', auth, async (req, res) => {
 // API para estados de puntos
 router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
-    const ahora = new Date();
-    const offsetMs = ahora.getTimezoneOffset() * 60000;
-    const ahoraLocal = new Date(ahora.getTime() - offsetMs);
-    const hoy = ahoraLocal.toISOString().split('T')[0];
+    // Obtener hora local correctamente ajustada
+    const now = new Date();
+    const offsetMs = now.getTimezoneOffset() * 60000;
+    const local = new Date(now.getTime() - offsetMs);
+    const fecha = local.toISOString().split('T')[0];
+    const hora = local.toTimeString().split(' ')[0];
 
-    const horaLimite = new Date(ahoraLocal);
+    const horaLimite = new Date(local);
     horaLimite.setHours(20, 30, 0, 0); // 20:30 hora local
 
     const result = await pool.query(`
@@ -51,7 +53,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
         ORDER BY punto_id, hora DESC
       ) r ON r.punto_id = p.id
       LEFT JOIN usuarios u ON r.usuario_id = u.id
-    `, [hoy]);
+    `, [fecha]);
 
     const datos = result.rows.map(p => {
       let color = 'yellow';
@@ -70,7 +72,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
           tooltip = 'Sin revisión';
         }
       } else {
-        const minutosRestantes = Math.floor((horaLimite - ahoraLocal) / 60000);
+        const minutosRestantes = Math.floor((horaLimite - local) / 60000);
         if (minutosRestantes <= 30 && minutosRestantes > 0) {
           color = 'red';
           tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
@@ -86,5 +88,6 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
+
 
 export default router;
