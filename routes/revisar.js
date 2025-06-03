@@ -25,8 +25,8 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 
-// POST /api/revisar/:id - registrar revisión
-router.post('/api/revisar/:id', auth, async (req, res) => {
+// POST /revisar/:id - registrar revisión
+router.post('/revisar/:id', auth, async (req, res) => {
   const puntoId = req.params.id;
   const userId = req.user.id;
 
