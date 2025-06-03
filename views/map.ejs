@@ -33,7 +33,7 @@
   <script>
     async function actualizarEstados() {
       try {
-        const respuesta = await fetch('/api/estados-puntos');
+        const respuesta = await fetch('/map/api/estados-puntos');
         const datos = await respuesta.json();
 
         datos.forEach(p => {
