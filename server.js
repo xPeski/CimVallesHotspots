@@ -31,12 +31,13 @@ app.use('/revisar', revisarRoutes);
 // Ruta raíz
 app.get('/', (req, res) => {
   try {
-    res.render('login', { error: null });
+    res.render('login', { error: null, redirect: '/map' });
   } catch (err) {
     console.error('Error al renderizar login:', err);
     res.status(500).send('Error interno al cargar el login');
   }
 });
+
 // Iniciar servidor
 try {
   app.listen(process.env.PORT || 3000, () => {

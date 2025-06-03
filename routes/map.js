@@ -34,24 +34,23 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
 
     const horaLimite = new Date();
     horaLimite.setHours(20, 30, 0, 0);
+const result = await pool.query(`
+  SELECT 
+    p.id,
+    p.nombre,
+    r.fecha,
+    r.hora,
+    u.nombre AS usuario
+  FROM puntos p
+  LEFT JOIN (
+    SELECT DISTINCT ON (punto_id) *
+    FROM revisiones
+    WHERE fecha = $1
+    ORDER BY punto_id, hora DESC
+  ) r ON r.punto_id = p.id
+  LEFT JOIN usuarios u ON r.usuario_id = u.id
+`, [hoy]);
 
-    const result = await pool.query(`
-      SELECT 
-        p.id,
-        p.nombre,
-        r.fecha,
-        r.hora,
-        u.nombre AS usuario
-      FROM puntos p
-      LEFT JOIN LATERAL (
-        SELECT *
-        FROM revisiones
-        WHERE punto_id = p.id AND fecha = $1
-        ORDER BY hora DESC
-        LIMIT 1
-      ) r ON true
-      LEFT JOIN usuarios u ON r.usuario_id = u.id
-    `, [hoy]);
 
     const datos = result.rows.map(p => {
       let color = 'yellow';
