@@ -60,13 +60,15 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       let tooltip = 'Sin revisión';
 
       const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
+      const fechaRevisionLocal = fechaHoraRevision ? new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000) : null;
+
 
       if (fechaHoraRevision) {
         const fechaRevisionLocal = new Date(fechaHoraRevision.getTime() - offsetMs);
 
         if (fechaRevisionLocal /*<= horaLimite*/) {
           color = 'green';
-          tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
+          tooltip = `Revisado por ${p.usuario} a las ${fechaRevisionLocal.toTimeString().slice(0, 5)}`;
         // } else {
         //   color = 'yellow';
         //   tooltip = 'Sin revisión';
