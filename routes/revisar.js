@@ -32,8 +32,9 @@ router.post('/:id', auth, async (req, res) => {
 
   try {
     const now = new Date();
-    const fecha = now.toISOString().split('T')[0]; // YYYY-MM-DD
-    const hora = now.toTimeString().split(' ')[0]; // HH:MM:SS
+    const fecha = now.toLocaleDateString('es-ES').split('/').reverse().join('-'); // Formato YYYY-MM-DD
+    const hora = now.toTimeString().split(' ')[0]; // Hora local HH:MM:SS
+
 
     const insert = await pool.query(`
       INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)

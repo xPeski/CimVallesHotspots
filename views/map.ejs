@@ -24,7 +24,7 @@
 <% puntos.forEach(p => { %>
 <g id="punto-<%= p.id %>" class="tooltip-box">
   <rect x="<%= p.x %>" y="<%= p.y %>" width="<%= p.ancho %>" height="<%= p.alto %>" fill="yellow" />
-  <title><%= p.tooltip %></title>
+  <title>Sin revisión</title>
 </g>
 <% }) %>
 
@@ -42,7 +42,7 @@
           if (grupo) {
             const rect = grupo.querySelector('rect');
             const title = grupo.querySelector('title');
-            const text = grupo.querySelector('text');
+           
 
             rect.setAttribute('fill', p.color);
             title.textContent = p.tooltip;
