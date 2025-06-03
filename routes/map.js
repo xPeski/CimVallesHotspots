@@ -64,13 +64,13 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       if (fechaHoraRevision) {
         const fechaRevisionLocal = new Date(fechaHoraRevision.getTime() - offsetMs);
 
-        if (fechaRevisionLocal <= horaLimite) {
+        if (fechaRevisionLocal /*<= horaLimite*/) {
           color = 'green';
           tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
-        } else {
-          color = 'yellow';
-          tooltip = 'Sin revisión';
-        }
+        // } else {
+        //   color = 'yellow';
+        //   tooltip = 'Sin revisión';
+        // }
       } else {
         const minutosRestantes = Math.floor((horaLimite - local) / 60000);
         if (minutosRestantes <= 30 && minutosRestantes > 0) {
