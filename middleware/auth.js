@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 export function auth(req, res, next) {
   const token = req.session.token;
-  if (!token) return res.redirect('/login?redirect=' + encodeURIComponent(req.originalUrl));
+  if (!token) return res.redirect('/auth/login?redirect=' + encodeURIComponent(req.originalUrl));
 
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
