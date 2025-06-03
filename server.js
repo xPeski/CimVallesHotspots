@@ -23,7 +23,7 @@ app.use(express.static('public'));
 
 app.use('/auth', authRoutes);
 app.use('/map', mapRoutes);
-app.use(express.static('public'));
+
 
 
 // Ruta raíz
