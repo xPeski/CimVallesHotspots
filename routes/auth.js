@@ -38,14 +38,15 @@ router.post('/login', async (req, res) => {
     req.session.token = token;
 
     req.session.save(err => {
-      if (err) {
-        console.error('❌ Error al guardar la sesión:', err);
-        return res.status(500).send('Error al guardar la sesión');
-      }
+  if (err) {
+    console.error('❌ Error al guardar la sesión:', err);
+    return res.status(500).send('Error al guardar la sesión');
+  }
 
-      console.log('✅ Login correcto. Redirigiendo...');
-      res.redirect('/map');
-    });
+  console.log('✅ Login correcto. Redirigiendo...');
+  const redirectTo = req.query.redirect || '/map'; // 👈 Aquí
+  res.redirect(redirectTo);                         // 👈 Aquí
+  });
 
   } catch (err) {
     console.error('Error en login:', err);
