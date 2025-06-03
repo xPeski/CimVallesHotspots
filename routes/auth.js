@@ -14,9 +14,10 @@ router.get('/login', (req, res) => {
 // POST /login - procesa el login
 router.post('/login', async (req, res) => {
   const { nombre, password } = req.body;
+
   try {
     const result = await pool.query('SELECT * FROM usuarios WHERE nombre = $1', [nombre]);
-console.log(result.rows[0]);
+
     if (result.rowCount === 0) {
       return res.render('login', { error: 'Usuario no encontrado' });
     }
@@ -33,19 +34,24 @@ console.log(result.rows[0]);
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
-console.log('✅ Usuario autenticado. Preparando sesión...');
-req.session.token = token;
 
-req.session.save(err => {
-  if (err) {
-    console.error('❌ Error al guardar sesión:', err);
-    return res.status(500).send('Error al guardar sesión');
+    req.session.token = token;
+
+    req.session.save(err => {
+      if (err) {
+        console.error('❌ Error al guardar la sesión:', err);
+        return res.status(500).send('Error al guardar la sesión');
+      }
+
+      console.log('✅ Login correcto. Redirigiendo...');
+      res.redirect('/map');
+    });
+
+  } catch (err) {
+    console.error('Error en login:', err);
+    res.status(500).send('Error interno');
   }
-
-  console.log('✅ Sesión guardada. Redirigiendo a:', redirectTo);
-  res.redirect(redirectTo);
 });
-
 
 
   } catch (err) {
