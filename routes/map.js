@@ -79,7 +79,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
         }
       }
 
-      return { id: p.id, color, tooltip };
+      return { id: p.id, color, tooltip };}
     });
 
     res.json(datos);
