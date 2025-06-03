@@ -8,7 +8,10 @@ const router = express.Router();
 
 // GET /login - muestra el formulario de login
 router.get('/login', (req, res) => {
-  res.render('login', { error: null });
+  res.render('login', {
+    error: null,
+    redirect: req.query.redirect || '/map'
+  });
 });
 
 // POST /login - procesa el login
