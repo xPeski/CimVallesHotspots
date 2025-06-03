@@ -58,7 +58,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
 
       const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
 
-      if (fechaHoraRevision && p.fecha === hoy) {
+      if (fechaHoraRevision /*&& p.fecha === hoy*/) {
         // Revisión registrada hoy
         if (ahora <= horaLimite) {
           color = 'green';
