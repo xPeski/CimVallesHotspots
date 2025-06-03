@@ -31,43 +31,44 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
     const hoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-const datos = result.rows.map(p => {
-  let color = 'yellow';
-  let tooltip = 'Sin revisión';
+    const result = await pool.query(`
+      SELECT 
+        puntos.id,
+        puntos.nombre,
+        r.fecha,
+        r.hora,
+        u.nombre AS usuario
+      FROM puntos
+      LEFT JOIN revisiones r ON puntos.id = r.punto_id AND r.fecha = $1
+      LEFT JOIN usuarios u ON r.usuario_id = u.id
+    `, [hoy]);
 
-  const ahora = new Date();
-  const horaLimite = new Date();       // 20:30 de hoy
-  horaLimite.setHours(20, 30, 0, 0);
+    const ahora = new Date();
+    const umbral = new Date();
+    umbral.setHours(20, 0, 0); // 20:00
 
-  const fechaHoraRevision = p.fecha && p.hora ? new Date(`${p.fecha}T${p.hora}`) : null;
+    const datos = result.rows.map(p => {
+      let color = 'yellow';
+      let tooltip = 'Sin revisión';
 
-  if (fechaHoraRevision && p.fecha === hoy) {
-    if (ahora <= horaLimite) {
-      color = 'green';
-      tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
-    } else {
-      // Revisado hoy, pero ya pasó la hora de corte => resetear
-      color = 'yellow';
-      tooltip = 'Sin revisión';
-    }
-  } else {
-    // No revisado hoy
-    if (ahora <= horaLimite) {
-      const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
-      if (minutosRestantes <= 30) {
-        color = 'red';
-        tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+      if (p.fecha) {
+        const fechaHora = new Date(`${p.fecha}T${p.hora}`);
+        tooltip = `Revisado por ${p.usuario} a las ${p.hora}`;
+
+        if (ahora > umbral) {
+          color = 'green'; // revisado
+        } else {
+          color = 'green'; // aún antes del límite, pero revisado
+        }
+      } else {
+        if ((umbral - ahora) < 30 * 60 * 1000) {
+          color = 'red';
+          tooltip = '❗ No revisado. Menos de 30 min para cierre';
+        }
       }
-    } else {
-      // Ya pasó el día y no hay revisión hoy => se mantiene como sin revisar (amarillo)
-      color = 'yellow';
-      tooltip = 'Sin revisión';
-    }
-  }
 
-  return { id: p.id, color, tooltip };
-});
-
+      return { id: p.id, color, tooltip };
+    });
 
     res.json(datos);
   } catch (err) {
