@@ -1,15 +1,31 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Mapa interactivo</title>
   <style>
-    .tooltip-box:hover title {
-      display: block;
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
     }
     svg {
       border: 1px solid #ccc;
+    }
+    table {
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table, th, td {
+      border: 1px solid #888;
+      padding: 6px 10px;
+    }
+    th {
+      background-color: #f2f2f2;
     }
   </style>
 </head>
@@ -17,35 +33,37 @@
   <h1>Mapa de la nave</h1>
   <p>Bienvenido, <%= usuario.nombre %></p>
 
-  <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
-    <image xlink:href="<%= mapa.imagen_url %>" width="800" height="600" />
-    <% puntos.forEach(p => { %>
-      <g id="punto-<%= p.id %>" class="tooltip-box" aria-label="Punto <%= p.nombre %>">
-        <rect x="<%= p.x %>" y="<%= p.y %>" width="<%= p.ancho %>" height="<%= p.alto %>" fill="yellow" />
-        <title>Sin revisión</title>
-      </g>
-    <% }) %>
-  </svg>
-  <script type="module" src="/js/actualizarEstados.js"></script>
-<h2>Últimas revisiones</h2>
-<table border="1" cellpadding="6" cellspacing="0">
-  <thead>
-    <tr>
-      <th>Punto</th>
-      <th>Usuario</th>
-      <th>Fecha y hora</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% revisiones.forEach(r => { %>
-      <tr>
-        <td><%= r.punto %></td>
-        <td><%= r.usuario || '—' %></td>
-        <td><%= r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-ES') : '—' %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+  <div class="container">
+    <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+      <image xlink:href="<%= mapa.imagen_url %>" width="800" height="600" />
+      <% puntos.forEach(p => { %>
+        <g id="punto-<%= p.id %>" class="tooltip-box" aria-label="Punto <%= p.nombre %>">
+          <rect x="<%= p.x %>" y="<%= p.y %>" width="<%= p.ancho %>" height="<%= p.alto %>" fill="yellow" />
+          <title>Sin revisión</title>
+        </g>
+      <% }) %>
+    </svg>
 
+    <table>
+      <thead>
+        <tr>
+          <th>Punto</th>
+          <th>Usuario</th>
+          <th>Fecha y hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% revisiones.forEach(r => { %>
+          <tr>
+            <td><%= r.punto %></td>
+            <td><%= r.usuario || '—' %></td>
+            <td><%= r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-ES') : '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module" src="/js/actualizarEstados.js"></script>
 </body>
 </html>
