@@ -30,10 +30,17 @@ router.post('/:id', auth, async (req, res) => {
   try {
     const { fecha, hora } = obtenerFechaHoraLocal();
 
+    const insert = await pool.query(`
+      INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id
+    `, [userId, puntoId, fecha, hora]);
+
     await pool.query(`
-    INSERT INTO revisiones (usuario_id, punto_id, fecha, hora, fecha_hora)
-    VALUES ($1, $2, $3, $4, $3::date + $4::time)
-  `, [usuarioId, puntoId, fecha, hora]);
+      UPDATE revisiones
+      SET fecha_hora = fecha + hora::time
+      WHERE id = $1
+    `, [insert.rows[0].id]);
 
     console.log('✅ Revisión insertada:', insert.rows[0]);
 
