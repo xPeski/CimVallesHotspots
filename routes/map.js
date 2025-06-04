@@ -1,4 +1,3 @@
-// ✅ Archivo: routes/map.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
@@ -37,15 +36,14 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       SELECT 
         p.id,
         p.nombre,
-        r.fecha,
-        r.hora,
+        r.fecha_hora,
         u.nombre AS usuario
       FROM puntos p
       LEFT JOIN (
         SELECT DISTINCT ON (punto_id) *
         FROM revisiones
-        WHERE fecha = $1
-        ORDER BY punto_id, hora DESC
+        WHERE DATE(fecha_hora) = $1
+        ORDER BY punto_id, fecha_hora DESC
       ) r ON r.punto_id = p.id
       LEFT JOIN usuarios u ON r.usuario_id = u.id
     `, [fecha]);
@@ -56,18 +54,12 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
         let color = 'yellow';
         let tooltip = 'Sin revisión';
 
-        const fechaHoraRevision = (p.fecha && p.hora && /^\d{2}:\d{2}:\d{2}$/.test(p.hora))
-          ? new Date(`${p.fecha}T${p.hora}`)
-          : null;
+        if (p.fecha_hora) {
+          const fechaRevision = new Date(p.fecha_hora);
+          const horaTexto = fechaRevision.toTimeString().slice(0, 5);
 
-        let fechaRevisionLocal = null;
-        if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
-          fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 3600000);
-        }
-
-        if (fechaRevisionLocal) {
           color = 'green';
-          tooltip = `Revisado por ${p.usuario} a las ${fechaRevisionLocal.toTimeString().slice(0, 5)}`;
+          tooltip = `Revisado por ${p.usuario} a las ${horaTexto}`;
         } else {
           const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
           if (minutosRestantes <= 30 && minutosRestantes > 0) {
