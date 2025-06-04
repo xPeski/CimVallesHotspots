@@ -27,6 +27,25 @@
     <% }) %>
   </svg>
   <script type="module" src="/js/actualizarEstados.js"></script>
+<h2>Últimas revisiones</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Punto</th>
+      <th>Usuario</th>
+      <th>Fecha y hora</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% revisiones.forEach(r => { %>
+      <tr>
+        <td><%= r.punto %></td>
+        <td><%= r.usuario || '—' %></td>
+        <td><%= r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-ES') : '—' %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
 
 </body>
 </html>

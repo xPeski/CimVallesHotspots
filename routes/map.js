@@ -1,3 +1,4 @@
+// ✅ Archivo: routes/map.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
@@ -18,7 +19,21 @@ router.get('/', auth, async (req, res) => {
     const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-    res.render('map', { usuario, mapa, puntos });
+    const revisionesResult = await pool.query(`
+      SELECT p.nombre AS punto, u.nombre AS usuario, r.fecha_hora
+      FROM puntos p
+      LEFT JOIN LATERAL (
+        SELECT * FROM revisiones r
+        WHERE r.punto_id = p.id
+        ORDER BY r.fecha_hora DESC LIMIT 1
+      ) r ON true
+      LEFT JOIN usuarios u ON u.id = r.usuario_id
+      WHERE p.mapa_id = $1
+    `, [mapa.id]);
+
+    const revisiones = revisionesResult.rows;
+
+    res.render('map', { usuario, mapa, puntos, revisiones });
   } catch (err) {
     console.error('❌ Error al cargar el mapa:', err);
     res.status(500).send('Error interno');
