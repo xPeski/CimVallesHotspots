@@ -5,10 +5,12 @@ import { obtenerFechaHoraLocal } from '../utils/fecha.js';
 export async function registrarRevision(puntoId, usuarioId) {
   const { fecha, hora, fechaHora } = obtenerFechaHoraLocal();
 
- await pool.query(`
+await pool.query(`
   INSERT INTO revisiones (usuario_id, punto_id, fecha, hora, fecha_hora)
-  VALUES ($1, $2, $3, $4, $5)
-`, [usuarioId, puntoId, fecha, hora, fechaHora.toISOString()]);
+  VALUES ($1, $2, $3, $4, $3::date + $4::time)
+`, [usuarioId, puntoId, fecha, hora]);
+
+}
 
 export async function obtenerUltimasPorFecha(fecha) {
   const res = await pool.query(`
