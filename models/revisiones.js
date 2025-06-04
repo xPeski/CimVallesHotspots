@@ -1,13 +1,14 @@
+// ✅ Archivo: models/revisiones.js
 import pool from '../db/db.js';
 import { obtenerFechaHoraLocal } from '../utils/fecha.js';
 
 export async function registrarRevision(puntoId, usuarioId) {
-  const { fecha, hora } = obtenerFechaHoraLocal();
+  const { fecha, hora, fechaHora } = obtenerFechaHoraLocal();
 
   await pool.query(`
-    INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
-    VALUES ($1, $2, $3, $4)
-  `, [usuarioId, puntoId, fecha, hora]);
+    INSERT INTO revisiones (usuario_id, punto_id, fecha, hora, fecha_hora)
+    VALUES ($1, $2, $3, $4, $5)
+  `, [usuarioId, puntoId, fecha, hora, fechaHora.toISOString()]);
 }
 
 export async function obtenerUltimasPorFecha(fecha) {
