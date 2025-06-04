@@ -1,4 +1,4 @@
-// middleware/auth.js
+// ✅ Archivo: middleware/auth.js
 import jwt from 'jsonwebtoken';
 
 export function auth(req, res, next) {
@@ -8,7 +8,8 @@ export function auth(req, res, next) {
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
-  } catch {
+  } catch (err) {
+    console.warn('Token inválido:', err.message);
     res.redirect('/auth/login');
   }
 }

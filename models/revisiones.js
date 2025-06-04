@@ -1,18 +1,14 @@
-export async function registrarRevision(puntoId, usuarioId) {
-  const now = new Date();
-  const offsetMs = 2 * 60 * 60 * 1000; // UTC+2
-  const local = new Date(now.getTime() + offsetMs);
+import pool from '../db/db.js';
+import { obtenerFechaHoraLocal } from '../utils/fecha.js';
 
-  const fecha = local.toISOString().split('T')[0]; // YYYY-MM-DD
-  const hora = local.toTimeString().split(' ')[0].slice(0, 8); // HH:MM:SS
+export async function registrarRevision(puntoId, usuarioId) {
+  const { fecha, hora } = obtenerFechaHoraLocal();
 
   await pool.query(`
     INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
     VALUES ($1, $2, $3, $4)
   `, [usuarioId, puntoId, fecha, hora]);
 }
-
-
 
 export async function obtenerUltimasPorFecha(fecha) {
   const res = await pool.query(`

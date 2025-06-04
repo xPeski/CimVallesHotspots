@@ -1,6 +1,8 @@
+// ✅ Archivo: routes/map.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
+import { obtenerFechaHoraLocal } from '../utils/fecha.js';
 
 const router = express.Router();
 
@@ -8,7 +10,6 @@ router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Obtener información del usuario y su mapa
     const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
     const usuario = usuarioResult.rows[0];
 
@@ -25,17 +26,12 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// API para estados de puntos
 router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
-    // Obtener hora local ajustada
-    const now = new Date();
-    const offsetMs = now.getTimezoneOffset() * 60000;
-    const local = new Date(now.getTime() - offsetMs);
-    const fecha = local.toISOString().split('T')[0];
+    const { fecha, fechaHora: ahora } = obtenerFechaHoraLocal();
 
-    const horaLimite = new Date(local);
-    horaLimite.setHours(20, 30, 0, 0); // 20:30 hora local
+    const horaLimite = new Date(ahora);
+    horaLimite.setHours(20, 30, 0, 0);
 
     const result = await pool.query(`
       SELECT 
@@ -55,7 +51,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     `, [fecha]);
 
     const datos = result.rows
-      .filter(p => p && p.id) // previene errores por registros nulos
+      .filter(p => p && p.id)
       .map(p => {
         let color = 'yellow';
         let tooltip = 'Sin revisión';
@@ -66,17 +62,19 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
 
         let fechaRevisionLocal = null;
         if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
-          fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000); // UTC+2
+          fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 3600000);
         }
 
         if (fechaRevisionLocal) {
           color = 'green';
           tooltip = `Revisado por ${p.usuario} a las ${fechaRevisionLocal.toTimeString().slice(0, 5)}`;
         } else {
-          const minutosRestantes = Math.floor((horaLimite - local) / 60000);
+          const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
           if (minutosRestantes <= 30 && minutosRestantes > 0) {
             color = 'red';
             tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+          } else if (ahora > horaLimite) {
+            tooltip = '⚠️ No revisado antes del cierre';
           }
         }
 
@@ -89,7 +87,5 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
-
-
 
 export default router;
