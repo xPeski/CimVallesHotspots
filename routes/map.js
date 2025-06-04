@@ -1,4 +1,3 @@
-// ✅ Archivo: routes/map.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
@@ -9,6 +8,7 @@ const router = express.Router();
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
+    const { fecha } = obtenerFechaHoraLocal();
 
     const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
     const usuario = usuarioResult.rows[0];
@@ -24,12 +24,12 @@ router.get('/', auth, async (req, res) => {
       FROM puntos p
       LEFT JOIN LATERAL (
         SELECT * FROM revisiones r
-        WHERE r.punto_id = p.id
+        WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1
         ORDER BY r.fecha_hora DESC LIMIT 1
       ) r ON true
       LEFT JOIN usuarios u ON u.id = r.usuario_id
       WHERE p.mapa_id = $1
-    `, [mapa.id]);
+    `, [fecha, mapa.id]);
 
     const revisiones = revisionesResult.rows;
 
