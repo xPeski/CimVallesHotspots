@@ -1,11 +1,10 @@
-// routes/revisar.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
+import { obtenerFechaHoraLocal } from '../utils/fecha.js';
 
 const router = express.Router();
 
-// GET /revisar/:id - mostrar la página del punto
 router.get('/:id', auth, async (req, res) => {
   const { id } = req.params;
 
@@ -24,22 +23,18 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-
-// POST /revisar/:id - registrar revisión
 router.post('/:id', auth, async (req, res) => {
   const puntoId = req.params.id;
   const userId = req.user.id;
 
   try {
-    const now = new Date();
-    const fecha = now.toLocaleDateString('es-ES').split('/').reverse().join('-'); // Formato YYYY-MM-DD
-    const hora = now.toTimeString().split(' ')[0]; // Hora local HH:MM:SS
-
+    const { fecha, hora } = obtenerFechaHoraLocal();
 
     const insert = await pool.query(`
       INSERT INTO revisiones (usuario_id, punto_id, fecha, hora)
       VALUES ($1, $2, $3, $4)
-      RETURNING *`, [userId, puntoId, fecha, hora]);
+      RETURNING *
+    `, [userId, puntoId, fecha, hora]);
 
     console.log('✅ Revisión insertada:', insert.rows[0]);
 
@@ -53,7 +48,5 @@ router.post('/:id', auth, async (req, res) => {
     res.status(500).send('Error al guardar la revisión');
   }
 });
-
-
 
 export default router;

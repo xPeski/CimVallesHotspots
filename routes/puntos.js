@@ -1,79 +1,95 @@
-// routes/puntos.js
 import express from 'express';
-import { auth } from './auth.js';
-import { obtenerUltimasPorFecha, registrarRevision } from '../models/revisiones.js';
-import { obtenerPorId } from '../models/puntos.js';
+import pool from '../db/db.js';
+import { auth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/estados-puntos - devuelve estado por fecha (hoy)
-router.get('/api/estados-puntos', auth, async (req, res) => {
-  const hoy = new Date().toISOString().split('T')[0];
+router.get('/', auth, async (req, res) => {
   try {
-    const puntos = await obtenerUltimasPorFecha(hoy);
-    const ahora = new Date();
-    const umbral = new Date();
-    umbral.setHours(20, 30, 0);
-    const mediaHoraAntes = new Date(umbral.getTime() - 30 * 60000);
+    const userId = req.user.id;
 
-    const resultado = puntos.map(p => {
-      let color = 'yellow';
-      let tooltip = 'Sin revisión';
+    // Obtener información del usuario y su mapa
+    const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
+    const usuario = usuarioResult.rows[0];
 
-      if (p.fecha_hora) {
-        const fechaRev = new Date(p.fecha_hora);
-        if (fechaRev.toDateString() === ahora.toDateString()) {
-          color = 'green';
-          tooltip = `Revisado por ${p.revisor} a las ${fechaRev.toLocaleTimeString()}`;
-        } else if (ahora > mediaHoraAntes) {
-          color = 'red';
-          tooltip = `No revisado hoy (última: ${fechaRev.toLocaleString()})`;
-        }
-      } else if (ahora > mediaHoraAntes) {
-        color = 'red';
-        tooltip = 'Nunca revisado y fuera de hora';
-      }
+    const mapaResult = await pool.query('SELECT * FROM mapas WHERE id = $1', [usuario.mapa_id]);
+    const mapa = mapaResult.rows[0];
 
-      return { id: p.id, color, tooltip };
-    });
+    const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
+    const puntos = puntosResult.rows;
 
-    res.json(resultado);
+    res.render('map', { usuario, mapa, puntos });
   } catch (err) {
-    console.error('Error obteniendo estados de puntos:', err);
-    res.status(500).json({ error: 'Error interno' });
-  }
-});
-
-// GET /revisar/:id - vista con botón para revisar
-router.get('/revisar/:id', auth, async (req, res) => {
-  const puntoId = parseInt(req.params.id);
-  try {
-    const punto = await obtenerPorId(puntoId);
-    if (!punto) return res.status(404).send('Punto no encontrado');
-
-    const revisado = req.session.revisado;
-    req.session.revisado = null; // Limpiar el estado después de mostrarlo
-
-    res.render('revisar', { punto, revisado });
-  } catch (err) {
-    console.error('Error mostrando punto:', err);
+    console.error('❌ Error al cargar el mapa:', err);
     res.status(500).send('Error interno');
   }
 });
 
-// POST /api/revisar/:id - registrar revisión de un punto
-router.post('/api/revisar/:id', auth, async (req, res) => {
-  const puntoId = parseInt(req.params.id);
-  const usuarioId = req.user.id;
-
+// API para estados de puntos
+router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
-    await registrarRevision(puntoId, usuarioId);
-    req.session.revisado = true;
-    res.redirect(`/revisar/${puntoId}`);
+    // Obtener hora local ajustada
+    const now = new Date();
+    const offsetMs = now.getTimezoneOffset() * 60000;
+    const local = new Date(now.getTime() - offsetMs);
+    const fecha = local.toISOString().split('T')[0];
+
+    const horaLimite = new Date(local);
+    horaLimite.setHours(20, 30, 0, 0); // 20:30 hora local
+
+    const result = await pool.query(`
+      SELECT 
+        p.id,
+        p.nombre,
+        r.fecha,
+        r.hora,
+        u.nombre AS usuario
+      FROM puntos p
+      LEFT JOIN (
+        SELECT DISTINCT ON (punto_id) *
+        FROM revisiones
+        WHERE fecha = $1
+        ORDER BY punto_id, hora DESC
+      ) r ON r.punto_id = p.id
+      LEFT JOIN usuarios u ON r.usuario_id = u.id
+    `, [fecha]);
+
+    const datos = result.rows
+      .filter(p => p && p.id) // previene errores por registros nulos
+      .map(p => {
+        let color = 'yellow';
+        let tooltip = 'Sin revisión';
+
+        const fechaHoraRevision = (p.fecha && p.hora && /^\d{2}:\d{2}:\d{2}$/.test(p.hora))
+          ? new Date(`${p.fecha}T${p.hora}`)
+          : null;
+
+        let fechaRevisionLocal = null;
+        if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
+          fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000); // UTC+2
+        }
+
+        if (fechaRevisionLocal) {
+          color = 'green';
+          tooltip = `Revisado por ${p.usuario} a las ${fechaRevisionLocal.toTimeString().slice(0, 5)}`;
+        } else {
+          const minutosRestantes = Math.floor((horaLimite - local) / 60000);
+          if (minutosRestantes <= 30 && minutosRestantes > 0) {
+            color = 'red';
+            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+          }
+        }
+
+        return { id: p.id, color, tooltip };
+      });
+
+    res.json(datos);
   } catch (err) {
-    console.error('Error registrando revisión:', err);
-    res.status(500).send('No se pudo registrar la revisión');
+    console.error('Error obteniendo estados:', err);
+    res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
+
+
 
 export default router;
