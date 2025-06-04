@@ -8,7 +8,7 @@ export async function registrarRevision(puntoId, usuarioId) {
   await pool.query(`
     INSERT INTO revisiones (usuario_id, punto_id, fecha, hora, fecha_hora)
     VALUES ($1, $2, $3, $4, $5)
-  `, [usuarioId, puntoId, fecha, hora, fechaHora.toISOString()]);
+  `, [usuarioId, puntoId, fecha, hora, fechaHora]);
 }
 
 export async function obtenerUltimasPorFecha(fecha) {
