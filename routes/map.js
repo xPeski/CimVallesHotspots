@@ -19,17 +19,18 @@ router.get('/', auth, async (req, res) => {
     const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-    const revisionesResult = await pool.query(`
-      SELECT p.nombre AS punto, u.nombre AS usuario, r.fecha_hora
-      FROM puntos p
-      LEFT JOIN LATERAL (
-        SELECT * FROM revisiones r
-        WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1
-        ORDER BY r.fecha_hora DESC LIMIT 1
-      ) r ON true
-      LEFT JOIN usuarios u ON u.id = r.usuario_id
-      WHERE p.mapa_id = $1
-    `, [fecha, mapa.id]);
+   const revisionesResult = await pool.query(`
+  SELECT p.nombre AS punto, u.nombre AS usuario, r.fecha_hora
+  FROM puntos p
+  LEFT JOIN LATERAL (
+    SELECT * FROM revisiones r
+    WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1
+    ORDER BY r.fecha_hora DESC LIMIT 1
+  ) r ON true
+  LEFT JOIN usuarios u ON u.id = r.usuario_id
+  WHERE p.mapa_id = $2
+`, [fecha, mapa.id]);
+
 
     const revisiones = revisionesResult.rows;
 
