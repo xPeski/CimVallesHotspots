@@ -28,12 +28,11 @@ router.get('/', auth, async (req, res) => {
 // API para estados de puntos
 router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
-    // Obtener hora local correctamente ajustada
+    // Obtener hora local ajustada
     const now = new Date();
     const offsetMs = now.getTimezoneOffset() * 60000;
     const local = new Date(now.getTime() - offsetMs);
     const fecha = local.toISOString().split('T')[0];
-    const hora = local.toTimeString().split(' ')[0];
 
     const horaLimite = new Date(local);
     horaLimite.setHours(20, 30, 0, 0); // 20:30 hora local
@@ -55,42 +54,34 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
       LEFT JOIN usuarios u ON r.usuario_id = u.id
     `, [fecha]);
 
-    const datos = result.rows.map(p => {
-      let color = 'yellow';
-      let tooltip = 'Sin revisión';
+    const datos = result.rows
+      .filter(p => p && p.id) // previene errores por registros nulos
+      .map(p => {
+        let color = 'yellow';
+        let tooltip = 'Sin revisión';
 
-      const fechaHoraRevision = (p.fecha && p.hora && /^\d{2}:\d{2}:\d{2}$/.test(p.hora))
-        ? new Date(`${p.fecha}T${p.hora}`)
-        : null;
+        const fechaHoraRevision = (p.fecha && p.hora && /^\d{2}:\d{2}:\d{2}$/.test(p.hora))
+          ? new Date(`${p.fecha}T${p.hora}`)
+          : null;
 
-      let fechaRevisionLocal = null;
-      if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
-        fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000); // UTC+2
-      }
+        let fechaRevisionLocal = null;
+        if (fechaHoraRevision && !isNaN(fechaHoraRevision.getTime())) {
+          fechaRevisionLocal = new Date(fechaHoraRevision.getTime() + 2 * 60 * 60 * 1000); // UTC+2
+        }
 
-
-
-      if (fechaHoraRevision) {
-        const fechaRevisionLocal = new Date(fechaHoraRevision.getTime() - offsetMs);
-
-        if (fechaRevisionLocal /*<= horaLimite*/) {
+        if (fechaRevisionLocal) {
           color = 'green';
           tooltip = `Revisado por ${p.usuario} a las ${fechaRevisionLocal.toTimeString().slice(0, 5)}`;
-        // } else {
-        //   color = 'yellow';
-        //   tooltip = 'Sin revisión';
-        // }
-        
-      } else {
-        const minutosRestantes = Math.floor((horaLimite - local) / 60000);
-        if (minutosRestantes <= 30 && minutosRestantes > 0) {
-          color = 'red';
-          tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+        } else {
+          const minutosRestantes = Math.floor((horaLimite - local) / 60000);
+          if (minutosRestantes <= 30 && minutosRestantes > 0) {
+            color = 'red';
+            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
+          }
         }
-      }
 
-      return { id: p.id, color, tooltip };}
-    });
+        return { id: p.id, color, tooltip };
+      });
 
     res.json(datos);
   } catch (err) {
@@ -98,6 +89,7 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estados' });
   }
 });
+
 
 
 export default router;
