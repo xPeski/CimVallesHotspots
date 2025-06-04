@@ -37,13 +37,14 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
         p.id,
         p.nombre,
         r.fecha_hora,
+        r.usuario_id,
         u.nombre AS usuario
       FROM puntos p
       LEFT JOIN (
-        SELECT DISTINCT ON (punto_id) *
-        FROM revisiones
-        WHERE DATE(fecha_hora) = $1
-        ORDER BY punto_id, fecha_hora DESC
+          SELECT DISTINCT ON (punto_id) punto_id, fecha_hora, usuario_id
+          FROM revisiones
+          WHERE DATE(fecha_hora) = $1
+          ORDER BY punto_id, fecha_hora DESC
       ) r ON r.punto_id = p.id
       LEFT JOIN usuarios u ON r.usuario_id = u.id
     `, [fecha]);
