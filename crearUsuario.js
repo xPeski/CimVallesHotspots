@@ -2,8 +2,8 @@ import pool from './db/db.js'; // Conexión a la base de datos
 import bcrypt from 'bcrypt'; // Para hashear las contraseñas
 
 async function crearUsuarioConContraseñaHasheada() {
-  const nombre = 'admin3';
-  const contraseña = 'admin3';  
+  const nombre = 'Adam';
+  const contraseña = 'Novell_2025*';  
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(contraseña, salt);
