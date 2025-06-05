@@ -4,16 +4,16 @@ import bcrypt from 'bcrypt'; // Para hashear las contraseñas
 async function crearUsuarioConContraseñaHasheada() {
   const nombre = 'Adam';
   const contraseña = 'Novell_2025*';  
-
+  const mapa_id = 1;
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(contraseña, salt);
-
+ 
   try {
     const result = await pool.query(
       `INSERT INTO usuarios (nombre, password_hash, mapa_id) 
        VALUES ($1, $2, $3) 
        RETURNING *`,
-      [nombre, hashedPassword, mapaId]
+      [nombre, hashedPassword, mapa_id]
     );
 
     console.log('✅ Usuario creado:', result.rows[0]);
