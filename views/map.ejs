@@ -59,8 +59,13 @@
   </style>
 </head>
 <body>
-  <h1>Mapa de la nave</h1>
-  <p>Bienvenido, <%= usuario.nombre %></p>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+  <h1 style="margin: 0; font-size: 1.8rem;">🗺️ Mapa de la nave</h1>
+  <div style="font-size: 1rem; color: #555;">
+    👤 Bienvenido, <strong><%= usuario.nombre %></strong>
+  </div>
+</div>
+
 
   <div class="container">
     <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
