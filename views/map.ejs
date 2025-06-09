@@ -33,7 +33,7 @@
       border-collapse: collapse;
       font-size: 14px;
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
     }
 
     table, th, td {
@@ -46,14 +46,6 @@
     }
 
     @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 1.25rem;
-      }
-
       .container {
         flex-direction: column;
         align-items: center;
@@ -84,16 +76,20 @@
       <thead>
         <tr>
           <th>Punto</th>
-          <th>Usuario</th>
-          <th>Fecha y hora</th>
+          <th>Usuario (T1)</th>
+          <th>Hora (T1)</th>
+          <th>Usuario (T2)</th>
+          <th>Hora (T2)</th>
         </tr>
       </thead>
       <tbody>
         <% revisiones.forEach(r => { %>
           <tr>
             <td><%= r.punto %></td>
-            <td><%= r.usuario || '—' %></td>
-            <td><%= r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-ES') : '—' %></td>
+            <td><%= r.usuario1 || '—' %></td>
+            <td><%= r.hora1 ? new Date(r.hora1).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '—' %></td>
+            <td><%= r.usuario2 || '—' %></td>
+            <td><%= r.hora2 ? new Date(r.hora2).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '—' %></td>
           </tr>
         <% }) %>
       </tbody>

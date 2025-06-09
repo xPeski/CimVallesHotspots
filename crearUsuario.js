@@ -2,7 +2,7 @@ import pool from './db/db.js'; // Conexión a la base de datos
 import bcrypt from 'bcrypt'; // Para hashear las contraseñas
 
 async function crearUsuarioConContraseñaHasheada() {
-  const nombre = 'Adam';
+  const nombre = 'Miquel';
   const contraseña = 'Novell_2025*';  
   const mapa_id = 1;
   const salt = await bcrypt.genSalt(10);
