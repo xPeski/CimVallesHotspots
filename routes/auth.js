@@ -90,7 +90,8 @@ router.post('/cambiar-password', auth, async (req, res) => {
     const hash = await bcrypt.hash(nueva, 10);
     await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, userId]);
 
-    res.render('cambiar-password', { error: null, success: 'Contraseña actualizada correctamente' });
+    res.redirect('/map');
+
 
   } catch (err) {
     console.error('❌ Error cambiando contraseña:', err);
