@@ -3,6 +3,8 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import pool from '../db/db.js';
+import { auth } from '../middleware/auth.js'; // ✅ Necesario para proteger rutas
+
 
 const router = express.Router();
 
