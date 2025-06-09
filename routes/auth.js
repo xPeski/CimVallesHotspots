@@ -63,4 +63,38 @@ router.get('/logout', (req, res) => {
   });
 });
 
+//Cambiar Contraseña
+router.get('/cambiar-password', auth, (req, res) => {
+  res.render('cambiar-password', { error: null, success: null });
+});
+
+router.post('/cambiar-password', auth, async (req, res) => {
+  const { actual, nueva, confirmar } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
+    const usuario = result.rows[0];
+
+    const valid = await bcrypt.compare(actual, usuario.password_hash);
+    if (!valid) {
+      return res.render('cambiar-password', { error: 'Contraseña actual incorrecta', success: null });
+    }
+
+    if (nueva !== confirmar) {
+      return res.render('cambiar-password', { error: 'Las nuevas contraseñas no coinciden', success: null });
+    }
+
+    const hash = await bcrypt.hash(nueva, 10);
+    await pool.query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [hash, userId]);
+
+    res.render('cambiar-password', { error: null, success: 'Contraseña actualizada correctamente' });
+
+  } catch (err) {
+    console.error('❌ Error cambiando contraseña:', err);
+    res.status(500).send('Error interno');
+  }
+});
+
+
 export default router;
