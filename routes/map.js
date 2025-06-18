@@ -1,3 +1,4 @@
+// ✅ Archivo: routes/map.js
 import express from 'express';
 import pool from '../db/db.js';
 import { auth } from '../middleware/auth.js';
@@ -8,7 +9,7 @@ const router = express.Router();
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { fecha } = obtenerFechaHoraLocal();
+    const { fecha, hora } = obtenerFechaHoraLocal();
 
     const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
     const usuario = usuarioResult.rows[0];
@@ -19,18 +20,30 @@ router.get('/', auth, async (req, res) => {
     const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-   const revisionesResult = await pool.query(`
-  SELECT p.nombre AS punto, u.nombre AS usuario, r.fecha_hora
-  FROM puntos p
-  LEFT JOIN LATERAL (
-    SELECT * FROM revisiones r
-    WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1
-    ORDER BY r.fecha_hora DESC LIMIT 1
-  ) r ON true
-  LEFT JOIN usuarios u ON u.id = r.usuario_id
-  WHERE p.mapa_id = $2
-`, [fecha, mapa.id]);
-
+    const revisionesResult = await pool.query(`
+      SELECT
+        p.nombre AS punto,
+        r1.usuario_id AS usuario1_id,
+        u1.nombre AS usuario1,
+        r1.fecha_hora AS hora1,
+        r2.usuario_id AS usuario2_id,
+        u2.nombre AS usuario2,
+        r2.fecha_hora AS hora2
+      FROM puntos p
+      LEFT JOIN LATERAL (
+        SELECT * FROM revisiones r
+        WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1 AND r.hora <= '20:30:00'
+        ORDER BY r.fecha_hora DESC LIMIT 1
+      ) r1 ON true
+      LEFT JOIN usuarios u1 ON r1.usuario_id = u1.id
+      LEFT JOIN LATERAL (
+        SELECT * FROM revisiones r
+        WHERE r.punto_id = p.id AND DATE(r.fecha_hora) = $1 AND r.hora > '20:30:00'
+        ORDER BY r.fecha_hora DESC LIMIT 1
+      ) r2 ON true
+      LEFT JOIN usuarios u2 ON r2.usuario_id = u2.id
+      WHERE p.mapa_id = $2
+    `, [fecha, mapa.id]);
 
     const revisiones = revisionesResult.rows;
 
@@ -45,8 +58,14 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
   try {
     const { fecha, fechaHora: ahora } = obtenerFechaHoraLocal();
 
-    const horaLimite = new Date(ahora);
-    horaLimite.setHours(20, 30, 0, 0);
+    const corte1 = new Date(ahora);
+    corte1.setHours(20, 30, 0, 0);
+
+    const aviso2Inicio = new Date(ahora);
+    aviso2Inicio.setHours(21, 45, 0, 0);
+
+    const corte2 = new Date(ahora);
+    corte2.setHours(22, 15, 0, 0);
 
     const result = await pool.query(`
       SELECT 
@@ -78,12 +97,18 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
           color = 'green';
           tooltip = `Revisado por ${p.usuario} a las ${horaTexto}`;
         } else {
-          const minutosRestantes = Math.floor((horaLimite - ahora) / 60000);
-          if (minutosRestantes <= 30 && minutosRestantes > 0) {
+          if (ahora < corte1) {
+            const minutosRestantes = Math.floor((corte1 - ahora) / 60000);
+            if (minutosRestantes <= 30) {
+              color = 'red';
+              tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (20:30)`;
+            }
+          } else if (ahora >= aviso2Inicio && ahora <= corte2) {
+            const minutosRestantes = Math.floor((corte2 - ahora) / 60000);
             color = 'red';
-            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre`;
-          } else if (ahora > horaLimite) {
-            tooltip = '⚠️ No revisado antes del cierre';
+            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (22:15)`;
+          } else {
+            tooltip = '⚠️ No revisado';
           }
         }
 
