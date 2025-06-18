@@ -79,10 +79,14 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
           SELECT DISTINCT ON (punto_id) punto_id, fecha_hora, usuario_id
           FROM revisiones
           WHERE DATE(fecha_hora) = $1
+            AND (
+              ($2::time <= '20:30:00' AND fecha_hora::time <= '20:30:00') OR
+              ($2::time >  '20:30:00' AND fecha_hora::time >  '20:30:00')
+            )
           ORDER BY punto_id, fecha_hora DESC
       ) r ON r.punto_id = p.id
       LEFT JOIN usuarios u ON r.usuario_id = u.id
-    `, [fecha]);
+    `, [fecha, ahora.toTimeString().slice(0, 5)]);
 
     const datos = result.rows
       .filter(p => p && p.id)
