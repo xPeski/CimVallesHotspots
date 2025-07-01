@@ -32,3 +32,22 @@ export async function obtenerUltimasPorFecha(fecha) {
   `, [fecha]);
   return res.rows;
 }
+
+export async function obtenerRevisionesEntreFechas(fechaInicio, fechaFin) {
+  const res = await pool.query(`
+    SELECT 
+      r.id,
+      r.punto_id,
+      p.nombre AS punto,
+      r.usuario_id,
+      u.nombre AS usuario,
+      r.fecha_hora
+    FROM revisiones r
+    INNER JOIN puntos p ON r.punto_id = p.id
+    INNER JOIN usuarios u ON r.usuario_id = u.id
+    WHERE r.fecha_hora BETWEEN $1 AND $2
+    ORDER BY r.fecha_hora DESC
+  `, [fechaInicio, fechaFin]);
+
+  return res.rows;
+}
