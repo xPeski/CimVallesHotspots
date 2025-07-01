@@ -50,7 +50,7 @@ router.get('/', auth, async (req, res) => {
 
 
     const revisiones = revisionesResult.rows;
-
+    console.log('✅ Filtrando desde:', desde, 'hasta:', hasta);
     res.render('map', { usuario, mapa, puntos, revisiones, desde, hasta });
   } catch (err) {
     console.error('❌ Error al cargar el mapa:', err);
