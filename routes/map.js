@@ -10,8 +10,9 @@ router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const { fecha, hora } = obtenerFechaHoraLocal();
-    const desde = req.query.desde || fecha;
-    const hasta = req.query.hasta || fecha;
+    const desde = req.query.desde && req.query.desde.trim() !== '' ? req.query.desde : fecha;
+    const hasta = req.query.hasta && req.query.hasta.trim() !== '' ? req.query.hasta : fecha;
+
 
 
     const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
