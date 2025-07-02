@@ -71,6 +71,13 @@
     </div>
   </div>
 </div>
+<div style="margin-bottom: 1rem;">
+  <form method="GET" action="/historico" style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <input type="date" name="desde" value="<%= desde %>" required>
+    <input type="date" name="hasta" value="<%= hasta %>" required>
+    <button type="submit">📜 Ver Histórico</button>
+  </form>
+</div>
 
 <script>
   const userName = document.getElementById('user-name');

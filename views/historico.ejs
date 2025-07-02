@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Histórico de Revisiones</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <h1>📅 Histórico de Revisiones</h1>
+
+  <form method="GET" action="/historico" style="margin-bottom: 1rem;">
+    <label>Desde: <input type="date" name="desde" value="<%= desde %>" required></label>
+    <label>Hasta: <input type="date" name="hasta" value="<%= hasta %>" required></label>
+    <button type="submit">Buscar</button>
+  </form>
+
+  <% if (error) { %>
+    <p style="color: red;"><%= error %></p>
+  <% } %>
+
+  <table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Fecha y hora</th>
+        <th>Punto</th>
+        <th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% revisiones.forEach(r => { %>
+        <tr>
+          <td><%= new Date(r.fecha_hora).toLocaleString('es-ES') %></td>
+          <td><%= r.punto %></td>
+          <td><%= r.usuario %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>
