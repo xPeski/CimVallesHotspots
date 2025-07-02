@@ -15,7 +15,7 @@ router.get('/', auth, async (req, res) => {
 
   try {
     const revisiones = await obtenerRevisionesEntreFechas(`${desde} 00:00:00`, `${hasta} 23:59:59`);
-    res.render('historico', { revisiones, desde, hasta });
+    res.render('historico', { revisiones, desde, hasta, error: null});
   } catch (err) {
     console.error('❌ Error en /historico:', err);
     res.status(500).send('Error interno');
