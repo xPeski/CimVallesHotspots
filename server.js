@@ -5,6 +5,9 @@ import authRoutes from './routes/auth.js';
 import mapRoutes  from './routes/map.js';
 import { auth } from './middleware/auth.js';
 import revisarRoutes from './routes/revisar.js';
+import historicoRoutes from './routes/historico.js';
+
+
 
 
 const app = express();
@@ -22,7 +25,7 @@ app.use(session({
 app.use(express.static('public'));
 
 // 2) Rutas
-
+app.use('/historico', historicoRoutes);
 app.use('/auth', authRoutes);
 app.use('/map', mapRoutes);
 app.use('/revisar', revisarRoutes);
