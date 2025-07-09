@@ -64,13 +64,13 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
     const { fecha, fechaHora: ahora } = obtenerFechaHoraLocal();
 
     const corte1 = new Date(ahora);
-    corte1.setHours(20, 30, 0, 0);
+    corte1.setHours(20, 35, 0, 0);
 
     const aviso2Inicio = new Date(ahora);
-    aviso2Inicio.setHours(21, 45, 0, 0);
+    aviso2Inicio.setHours(22, 5, 0, 0); // 30 min antes de corte2
 
     const corte2 = new Date(ahora);
-    corte2.setHours(22, 15, 0, 0);
+    corte2.setHours(22, 35, 0, 0);
 
     const result = await pool.query(`
       SELECT 
@@ -85,8 +85,8 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
           FROM revisiones
           WHERE DATE(fecha_hora) = $1
             AND (
-              ($2::time <= '20:30:00' AND fecha_hora::time <= '20:30:00') OR
-              ($2::time >  '20:30:00' AND fecha_hora::time >  '20:30:00')
+              ($2::time <= '20:35:00' AND fecha_hora::time <= '20:35:00') OR
+              ($2::time >  '20:35:00' AND fecha_hora::time >  '20:35:00')
             )
           ORDER BY punto_id, fecha_hora DESC
       ) r ON r.punto_id = p.id
@@ -110,12 +110,12 @@ router.get('/api/estados-puntos', auth, async (req, res) => {
             const minutosRestantes = Math.floor((corte1 - ahora) / 60000);
             if (minutosRestantes <= 30) {
               color = 'red';
-              tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (20:30)`;
+              tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (20:35)`;
             }
           } else if (ahora >= aviso2Inicio && ahora <= corte2) {
             const minutosRestantes = Math.floor((corte2 - ahora) / 60000);
             color = 'red';
-            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (22:15)`;
+            tooltip = `❗ No revisado. Menos de ${minutosRestantes} min para cierre (22:35)`;
           } else {
             tooltip = '⚠️ No revisado';
           }
