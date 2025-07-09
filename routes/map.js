@@ -13,8 +13,6 @@ router.get('/', auth, async (req, res) => {
     const desde = req.query.desde && req.query.desde.trim() !== '' ? req.query.desde : fecha;
     const hasta = req.query.hasta && req.query.hasta.trim() !== '' ? req.query.hasta : fecha;
 
-
-
     const usuarioResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [userId]);
     const usuario = usuarioResult.rows[0];
 
@@ -24,31 +22,30 @@ router.get('/', auth, async (req, res) => {
     const puntosResult = await pool.query('SELECT * FROM puntos WHERE mapa_id = $1', [mapa.id]);
     const puntos = puntosResult.rows;
 
-   const revisionesResult = await pool.query(`
-  SELECT
-    p.nombre AS punto,
-    r1.usuario_id AS usuario1_id,
-    u1.nombre AS usuario1,
-    r1.fecha_hora AS hora1,
-    r2.usuario_id AS usuario2_id,
-    u2.nombre AS usuario2,
-    r2.fecha_hora AS hora2
-  FROM puntos p
-  LEFT JOIN LATERAL (
-    SELECT * FROM revisiones r
-    WHERE r.punto_id = p.id AND r.fecha_hora BETWEEN $1 AND $2 AND r.hora <= '20:30:00'
-    ORDER BY r.fecha_hora DESC LIMIT 1
-  ) r1 ON true
-  LEFT JOIN usuarios u1 ON r1.usuario_id = u1.id
-  LEFT JOIN LATERAL (
-    SELECT * FROM revisiones r
-    WHERE r.punto_id = p.id AND r.fecha_hora BETWEEN $1 AND $2 AND r.hora > '20:30:00'
-    ORDER BY r.fecha_hora DESC LIMIT 1
-  ) r2 ON true
-  LEFT JOIN usuarios u2 ON r2.usuario_id = u2.id
-  WHERE p.mapa_id = $3
-`, [`${desde} 00:00:00`, `${hasta} 23:59:59`, mapa.id]);
-
+    const revisionesResult = await pool.query(`
+      SELECT
+        p.nombre AS punto,
+        r1.usuario_id AS usuario1_id,
+        u1.nombre AS usuario1,
+        r1.fecha_hora AS hora1,
+        r2.usuario_id AS usuario2_id,
+        u2.nombre AS usuario2,
+        r2.fecha_hora AS hora2
+      FROM puntos p
+      LEFT JOIN LATERAL (
+        SELECT * FROM revisiones r
+        WHERE r.punto_id = p.id AND r.fecha_hora BETWEEN $1 AND $2 AND r.hora <= '20:35:00'
+        ORDER BY r.fecha_hora DESC LIMIT 1
+      ) r1 ON true
+      LEFT JOIN usuarios u1 ON r1.usuario_id = u1.id
+      LEFT JOIN LATERAL (
+        SELECT * FROM revisiones r
+        WHERE r.punto_id = p.id AND r.fecha_hora BETWEEN $1 AND $2 AND r.hora > '20:35:00'
+        ORDER BY r.fecha_hora DESC LIMIT 1
+      ) r2 ON true
+      LEFT JOIN usuarios u2 ON r2.usuario_id = u2.id
+      WHERE p.mapa_id = $3
+    `, [`${desde} 00:00:00`, `${hasta} 23:59:59`, mapa.id]);
 
     const revisiones = revisionesResult.rows;
     console.log('✅ Filtrando desde:', desde, 'hasta:', hasta);
